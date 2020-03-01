@@ -46,30 +46,40 @@
         ></v-textarea>
       </v-col>
       <v-col>
-        <CodeEditor/>
+        <div class="exercise-editor-ace-editor" id="editor">
+
+        </div>
+        <div>
+          <v-btn block color="secondary" dark @click="sandbox()">Run sandbox Code</v-btn>
+        </div>
       </v-col>
     </v-row>
     <div align="center">
       <v-col cols="12" sm="6" md="3">
-        <v-btn
-          block color="secondary"
-          dark
-          @click="create()"
-          >Create
-        </v-btn>
+        <v-textarea
+          v-model="testResult"
+          solo
+          name="testResult"
+          label="test Result"
+          required
+        ></v-textarea>
+      </v-col>
+    </div>
+    <div align="center">
+      <v-col cols="12" sm="6" md="3">
+        <v-btn block color="secondary" dark @click="create()">Create</v-btn>
       </v-col>
     </div>
   </v-container>
 </template>
 
 <script>
-import CodeEditor from '@/components/CodeEditor'
+import ace from 'ace-builds/src-noconflict/ace'
+import 'ace-builds/src-noconflict/theme-monokai'
+import 'ace-builds/src-noconflict/mode-python'
+import 'ace-builds/webpack-resolver'
 
 export default {
-  components: {
-    CodeEditor
-  },
-
   data: () => ({
     instructions: '',
     lang: '',
@@ -80,8 +90,16 @@ export default {
     template_regions_rw: [0],
     difficulty: 0,
     score: 0,
-    creation_date: new Date()
+    creation_date: new Date(),
+    editor: null,
+    testResult: ''
   }),
+
+  mounted () {
+    this.editor = ace.edit('editor')
+    this.editor.setTheme('ace/theme/monokai')
+    this.editor.session.setMode(`ace/mode/${this.lang}`)
+  },
 
   methods: {
     async create () {
@@ -94,7 +112,26 @@ export default {
       } catch (err) {
         console.log(err)
       }
+    },
+    async sandbox () {
+      const { lang, editor, tests } = this
+      const solution = editor.getValue()
+      try {
+        const result = await this.axios.post('http://localhost:3000/api/v1/exercise/sandbox', {
+          lang, tests, solution
+        })
+        this.testResult = JSON.stringify(result.data)
+      } catch (err) {
+        console.log(err)
+      }
     }
   }
 }
 </script>
+
+<style scoped>
+.exercise-editor-ace-editor {
+  position: relative;
+  min-height: 20rem;
+}
+</style>
