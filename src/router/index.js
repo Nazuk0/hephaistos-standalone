@@ -1,47 +1,43 @@
 import Vue from 'vue'
-import axios from 'axios'
 import VueRouter from 'vue-router'
 import Home from '../components/Home.vue'
 import Login from '../components/Login.vue'
 import Teacher from '../components/Teacher.vue'
+import store from '../store/index'
 
 Vue.use(VueRouter)
 
-function createRouter (state) {
-  async function beforeEnter (to, from, next) {
-    try {
-      const { data: user } = await axios.get('http://localhost:3000/api/v1/me')
-      state.user = user
-      next()
-    } catch (err) {
-      console.log('err', err)
-      next('/login') // redirect to login if user is not authenticated
-    }
+async function beforeEnter (_to, _from, next) {
+  if (!store.getters['user/isAuthenticated']) {
+    await store.dispatch('user/fetchUser')
   }
-
-  const routes = [
-    {
-      path: '/',
-      name: 'home',
-      component: Home,
-      beforeEnter
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: Login
-    },
-    {
-      path: '/teacher',
-      name: 'teacher',
-      component: Teacher,
-      beforeEnter
-    }
-  ]
-
-  return new VueRouter({
-    routes
-  })
+  if (store.getters['user/isAuthenticated']) {
+    next()
+    return
+  }
+  next('/login')
 }
 
-export default createRouter
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: Home,
+    beforeEnter
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
+  },
+  {
+    path: '/teacher',
+    name: 'teacher',
+    component: Teacher,
+    beforeEnter
+  }
+]
+
+export default new VueRouter({
+  routes
+})

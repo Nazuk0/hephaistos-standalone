@@ -3,19 +3,16 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
-import createRouter from './router/index'
+import router from './router'
+import store from './store/index'
 
 Vue.config.productionTip = false
 axios.defaults.withCredentials = true // this line here !
 Vue.use(VueAxios, axios)
 
-const state = {
-  user: {}
-}
-
 new Vue({
-  data: state,
-  router: createRouter(state),
+  store,
+  router,
   vuetify,
   render: h => h(App)
 }).$mount('#app')

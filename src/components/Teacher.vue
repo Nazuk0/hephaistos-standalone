@@ -47,7 +47,6 @@
       </v-col>
       <v-col>
         <div class="exercise-editor-ace-editor" id="editor">
-
         </div>
         <div>
           <v-btn block color="secondary" dark @click="sandbox()">Run sandbox Code</v-btn>

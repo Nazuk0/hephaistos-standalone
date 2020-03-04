@@ -20,16 +20,45 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { mapState, mapActions, mapGetters } from 'vuex'
 
 export default {
-  data () {
-    return {
-      listExercises: ['']
-    }
+  data: () => ({
+  }),
+
+  computed: {
+    ...mapState('modules', ['modules']),
+    ...mapState('sessions', ['sessions']),
+    ...mapState('exercises', ['exercises']),
+    ...mapGetters('sessions', ['getSessionsByModuleId']),
+    ...mapGetters('exercises', ['getExercisesByModuleId'])
   },
 
-  mounted () {
+  async mounted () {
+    await this.fetchModule()
+    await Promise.all(
+      this.module.map(m => this.fetchSessionForModule({ moduleId: m.id }))
+    )
+    await Promise.all(
+      this.module.map(s => this.fetchExercisesForSession({ sessionId: s.id }))
+    )
+  },
+
+  methods: {
+    ...mapActions('modules', ['fetchModules']),
+    ...mapActions('sessions', ['fetchSessionsForModule']),
+    ...mapActions('exercises', ['fetchExercisesForSession']),
+    getFirstExerciseIdOfSession  (sessId) {
+      const exos = this.getExercisesByModuleId(sessId)
+      if (exos.length) {
+        return exos[0].id
+      } else {
+        return 0
+      }
+    }
+  }
+
+  /*  mounted () {
     axios.get('http://localhost:3000/api/v1/exercises')
       .then((response) => {
         this.listExercises = response.data
@@ -37,6 +66,6 @@ export default {
       .catch((error) => {
         console.log(error)
       })
-  }
+  } */
 }
 </script>
